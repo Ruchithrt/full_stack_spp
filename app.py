@@ -4,6 +4,7 @@ from model import Supplier
 from db import SessionLocal
 from db_models import Supplier, Product
 from model import Supplier as Supplier_schema, Product as Product_schema
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
@@ -14,6 +15,18 @@ def get_db():
     finally:
         db.close()
 
+
+origins = [
+    'http://localhost:3000'
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,          # list of allowed origins
+    allow_credentials=True,         # whether to allow cookies/authorization headers
+    allow_methods=["*"],            # list of allowed HTTP methods, "*" means all
+    allow_headers=["*"],            # list of allowed headers, "*" means all
+)
 
 @app.get("/")
 def index():
