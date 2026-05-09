@@ -38,7 +38,10 @@ export default function Supplier() {
         <thead>
           <tr className="bg-gray-100">
             <th className="px-4 py-2 border">ID</th>
-            <th className="px-4 py-2 border">Name</th>
+            <th className="px-4 py-2 border">Distribution Name</th>
+            <th className="px-4 py-2 border">Owner</th>
+            <th className="px-4 py-2 border">Email</th>
+            <th className="px-4 py-2 border">Phone No</th>
             <th className="px-4 py-2 border">Actions</th>
           </tr>
         </thead>
@@ -46,7 +49,10 @@ export default function Supplier() {
           {suppliers.map((s) => (
             <tr key={s.id}>
               <td className="px-4 py-2 border">{s.id}</td>
+              <td className="px-4 py-2 border">{s.company}</td>
               <td className="px-4 py-2 border">{s.name}</td>
+              <td className="px-4 py-2 border">{s.email}</td>
+              <td className="px-4 py-2 border">{s.phone}</td>
               <td className="px-4 py-2 border space-x-2">
                 <button
                   onClick={() => handleUpdate(s.id)}

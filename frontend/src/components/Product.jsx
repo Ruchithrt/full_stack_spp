@@ -42,6 +42,10 @@ export default function Product() {
           <tr className="bg-gray-100">
             <th className="px-4 py-2 border">ID</th>
             <th className="px-4 py-2 border">Name</th>
+            <th className="px-4 py-2 border">Quantity Instock</th>
+            <th className="px-4 py-2 border">Quantity Sold</th>
+            <th className="px-4 py-2 border">Price (In Rs)</th>
+            <th className="px-4 py-2 border">Supplier</th>
             <th className="px-4 py-2 border">Actions</th>
           </tr>
         </thead>
@@ -50,6 +54,11 @@ export default function Product() {
             <tr key={p.id}>
               <td className="px-4 py-2 border">{p.id}</td>
               <td className="px-4 py-2 border">{p.name}</td>
+              <td className="px-4 py-2 border">{p.quantity_instock}</td>
+              <td className="px-4 py-2 border">{p.quantity_sold}</td>
+              <td className="px-4 py-2 border">{p.price}</td>
+              <td className="px-4 py-2 border">{p.supplier_id}</td>
+
               <td className="px-4 py-2 border space-x-2">
                 <button
                   onClick={() => handleUpdate(p.id)}
