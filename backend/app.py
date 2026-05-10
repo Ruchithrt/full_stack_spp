@@ -66,7 +66,7 @@ def update_supplier(supplier_id:int, supplier_data:Supplier_schema, db:Session=D
     db.refresh(db_supplier)
     return db_supplier
 
-@app.delete("/suppliers/{supplier_id}")
+@app.delete("/delete_suppliers/{supplier_id}")
 def delete_supplier(supplier_id: int, db: Session = Depends(get_db)):
     db_supplier = db.query(Supplier).filter(Supplier.id == supplier_id).first()
     if not db_supplier:
