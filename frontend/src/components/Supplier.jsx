@@ -10,7 +10,13 @@ export default function Supplier() {
   }, []);
 
   const handleDelete = async (id) => {
-    await fetch(`http://127.0.0.1:8000/suppliers/${id}`, { method: "DELETE" });
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this supplier?",
+    );
+    if (!confirmed) return;
+    await fetch(`http://127.0.0.1:8000/delete_suppliers/${id}`, {
+      method: "DELETE",
+    });
     setSuppliers(suppliers.filter((s) => s.id !== id));
   };
 

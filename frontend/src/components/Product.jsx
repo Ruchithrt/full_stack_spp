@@ -11,7 +11,14 @@ export default function Product() {
   }, []);
 
   const handleDelete = async (id) => {
-    await fetch(`http://127.0.0.1:8000/products/${id}`, { method: "DELETE" });
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this product?",
+    );
+    if (!confirmed) return; // stop if user cancels
+
+    await fetch(`http://127.0.0.1:8000/delete_product/${id}`, {
+      method: "DELETE",
+    });
     setProducts(products.filter((p) => p.id !== id));
   };
 
