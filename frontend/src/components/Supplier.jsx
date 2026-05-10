@@ -2,7 +2,8 @@ import React, { useEffect, useState } from "react";
 
 export default function Supplier() {
   const [suppliers, setSuppliers] = useState([]);
-  const [showModal, setShowModal] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [formData, setFormData] = useState({
     id: "",
     name: "",
@@ -28,19 +29,12 @@ export default function Supplier() {
     setSuppliers(suppliers.filter((s) => s.id !== id));
   };
 
-  const handleUpdate = async (id) => {
-    await fetch(`http://127.0.0.1:8000/suppliers/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: "Updated Supplier" }),
-    });
-    const updated = await fetch("http://127.0.0.1:8000/suppliers").then((res) =>
-      res.json(),
-    );
-    setSuppliers(updated);
+  const handleOpenUpdate = (supplier) => {
+    setFormData(supplier); // prefill with current info
+    setShowUpdateModal(true);
   };
 
-  const handleAddSupplier = async () => {
+  const handleUpdateSupplier = async () => {
     // Validations
     if (
       !formData.name ||
@@ -64,7 +58,53 @@ export default function Supplier() {
       return;
     }
 
-    // Call backend
+    const res = await fetch(
+      `http://127.0.0.1:8000/update_supplier/${formData.id}`,
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      },
+    );
+
+    if (res.ok) {
+      const updatedSupplier = await res.json();
+      setSuppliers(
+        suppliers.map((s) =>
+          s.id === updatedSupplier.id ? updatedSupplier : s,
+        ),
+      );
+      setShowUpdateModal(false);
+      setFormData({ id: "", name: "", company: "", email: "", phone: "" });
+    } else {
+      alert("Failed to update supplier.");
+    }
+  };
+
+  const handleAddSupplier = async () => {
+    if (
+      !formData.id ||
+      !formData.name ||
+      !formData.company ||
+      !formData.email ||
+      !formData.phone
+    ) {
+      alert("All fields are required!");
+      return;
+    }
+    if (
+      formData.name.length > 35 ||
+      formData.company.length > 30 ||
+      formData.email.length > 30
+    ) {
+      alert("Name, company, and email must be within allowed length.");
+      return;
+    }
+    if (!/^\d{10}$/.test(formData.phone)) {
+      alert("Phone number must be exactly 10 digits.");
+      return;
+    }
+
     const res = await fetch("http://127.0.0.1:8000/add_supplier", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -73,9 +113,9 @@ export default function Supplier() {
 
     if (res.ok) {
       const newSupplier = await res.json();
-      setSuppliers([...suppliers, newSupplier]); // add to list
-      setShowModal(false); // close modal
-      setFormData({ name: "", company: "", email: "", phone: "" }); // reset form
+      setSuppliers([...suppliers, newSupplier]);
+      setShowAddModal(false);
+      setFormData({ id: "", name: "", company: "", email: "", phone: "" });
     } else {
       alert("Failed to add supplier.");
     }
@@ -86,7 +126,7 @@ export default function Supplier() {
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-xl font-bold">Suppliers</h1>
         <button
-          onClick={() => setShowModal(true)}
+          onClick={() => setShowAddModal(true)}
           className="bg-indigo-600 text-white px-4 py-2 rounded-md"
         >
           Add Supplier
@@ -115,7 +155,7 @@ export default function Supplier() {
               <td className="px-4 py-2 border">{s.phone}</td>
               <td className="px-4 py-2 border space-x-2">
                 <button
-                  onClick={() => handleUpdate(s.id)}
+                  onClick={() => handleOpenUpdate(s)}
                   className="bg-yellow-500 text-white px-2 py-1 rounded"
                 >
                   Update
@@ -132,14 +172,14 @@ export default function Supplier() {
         </tbody>
       </table>
 
-      {/* Popup Modal */}
-      {showModal && (
+      {/* Add Modal */}
+      {showAddModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
           <div className="bg-white p-6 rounded shadow-lg w-96">
             <h2 className="text-lg font-bold mb-4">Add New Supplier</h2>
             <input
               type="text"
-              placeholder="Product Id"
+              placeholder="Supplier Id"
               value={formData.id}
               onChange={(e) => setFormData({ ...formData, id: e.target.value })}
               className="border p-2 w-full mb-2"
@@ -182,7 +222,7 @@ export default function Supplier() {
             />
             <div className="flex justify-end space-x-2">
               <button
-                onClick={() => setShowModal(false)}
+                onClick={() => setShowAddModal(false)}
                 className="bg-gray-400 text-white px-4 py-2 rounded"
               >
                 Cancel
@@ -192,6 +232,71 @@ export default function Supplier() {
                 className="bg-green-600 text-white px-4 py-2 rounded"
               >
                 Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Update Modal */}
+      {showUpdateModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded shadow-lg w-96">
+            <h2 className="text-lg font-bold mb-4">Update Supplier</h2>
+            <input
+              type="text"
+              value={formData.id}
+              disabled
+              className="border p-2 w-full mb-2"
+            />
+            <input
+              type="text"
+              placeholder="Owner Name"
+              value={formData.name}
+              onChange={(e) =>
+                setFormData({ ...formData, name: e.target.value })
+              }
+              className="border p-2 w-full mb-2"
+            />
+            <input
+              type="text"
+              placeholder="Company"
+              value={formData.company}
+              onChange={(e) =>
+                setFormData({ ...formData, company: e.target.value })
+              }
+              className="border p-2 w-full mb-2"
+            />
+            <input
+              type="email"
+              placeholder="Email"
+              value={formData.email}
+              onChange={(e) =>
+                setFormData({ ...formData, email: e.target.value })
+              }
+              className="border p-2 w-full mb-2"
+            />
+            <input
+              type="text"
+              placeholder="Phone (10 digits)"
+              value={formData.phone}
+              onChange={(e) =>
+                setFormData({ ...formData, phone: e.target.value })
+              }
+              className="border p-2 w-full mb-4"
+            />
+            <div className="flex justify-end space-x-2">
+              <button
+                onClick={() => setShowUpdateModal(false)}
+                className="bg-gray-400 text-white px-4 py-2 rounded"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleUpdateSupplier}
+                className="bg-green-600 text-white px-4 py-2 rounded"
+              >
+                Update
               </button>
             </div>
           </div>

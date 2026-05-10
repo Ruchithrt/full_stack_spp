@@ -4,7 +4,17 @@ export default function Product() {
   const [products, setProducts] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
   const [showModal, setShowModal] = useState(false);
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
+  const [selectedProductId, setSelectedProductId] = useState(null);
   const [formData, setFormData] = useState({
+    id: "",
+    name: "",
+    quantity_instock: "",
+    quantity_sold: "",
+    price: "",
+    supplierId: "",
+  });
+  const [updateFormData, setUpdateFormData] = useState({
     id: "",
     name: "",
     quantity_instock: "",
@@ -36,20 +46,81 @@ export default function Product() {
     setProducts(products.filter((p) => p.id !== id));
   };
 
-  const handleUpdate = async (id) => {
-    await fetch(`http://127.0.0.1:8000/products/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: "Updated Product" }),
+  const handleOpenUpdateModal = (product) => {
+    setSelectedProductId(product.id);
+    setUpdateFormData({
+      id: product.id,
+      name: product.name,
+      quantity_instock: product.quantity_instock,
+      quantity_sold: product.quantity_sold,
+      price: product.price,
+      supplierId: product.supplier?.id || "",
     });
-    const updated = await fetch("http://127.0.0.1:8000/products").then((res) =>
-      res.json(),
+    setShowUpdateModal(true);
+  };
+
+  const handleUpdateProduct = async () => {
+    if (
+      !updateFormData.name ||
+      !updateFormData.quantity_instock ||
+      !updateFormData.quantity_sold ||
+      !updateFormData.price ||
+      !updateFormData.supplierId
+    ) {
+      alert("All fields are required!");
+      return;
+    }
+
+    const supplier = suppliers.find(
+      (s) => s.id === parseInt(updateFormData.supplierId),
     );
-    setProducts(updated);
+    if (!supplier) {
+      alert("Supplier not found!");
+      return;
+    }
+
+    const payload = {
+      id: parseInt(updateFormData.id),
+      name: updateFormData.name,
+      quantity_instock: parseInt(updateFormData.quantity_instock),
+      quantity_sold: parseInt(updateFormData.quantity_sold),
+      price: parseFloat(updateFormData.price),
+      revenue:
+        parseInt(updateFormData.quantity_sold) *
+        parseFloat(updateFormData.price),
+      supplier: supplier,
+    };
+
+    const res = await fetch(
+      `http://127.0.0.1:8000/update_product/${selectedProductId}`,
+      {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      },
+    );
+
+    if (res.ok) {
+      const updatedProduct = await res.json();
+      setProducts(
+        products.map((p) => (p.id === selectedProductId ? updatedProduct : p)),
+      );
+      setShowUpdateModal(false);
+      setSelectedProductId(null);
+      setUpdateFormData({
+        id: "",
+        name: "",
+        quantity_instock: "",
+        quantity_sold: "",
+        price: "",
+        supplierId: "",
+      });
+    } else {
+      alert("Failed to update product.");
+    }
   };
 
   const handleAddProduct = async () => {
-    // Validations
     if (
       !formData.id ||
       !formData.name ||
@@ -141,7 +212,7 @@ export default function Product() {
               </td>
               <td className="px-4 py-2 border space-x-2">
                 <button
-                  onClick={() => handleUpdate(p.id)}
+                  onClick={() => handleOpenUpdateModal(p)}
                   className="bg-yellow-500 text-white px-2 py-1 rounded"
                 >
                   Update
@@ -158,7 +229,7 @@ export default function Product() {
         </tbody>
       </table>
 
-      {/* Popup Modal */}
+      {/* Add Product Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
           <div className="bg-white p-6 rounded shadow-lg w-96">
@@ -232,6 +303,98 @@ export default function Product() {
                 className="bg-green-600 text-white px-4 py-2 rounded"
               >
                 Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Update Product Modal */}
+      {showUpdateModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded shadow-lg w-96">
+            <h2 className="text-lg font-bold mb-4">Update Product</h2>
+            <input
+              type="number"
+              placeholder="Product ID"
+              value={updateFormData.id}
+              disabled
+              className="border p-2 w-full mb-2 bg-gray-100 cursor-not-allowed"
+            />
+            <input
+              type="text"
+              placeholder="Product Name"
+              value={updateFormData.name}
+              onChange={(e) =>
+                setUpdateFormData({ ...updateFormData, name: e.target.value })
+              }
+              className="border p-2 w-full mb-2"
+            />
+            <input
+              type="number"
+              placeholder="Quantity In Stock"
+              value={updateFormData.quantity_instock}
+              onChange={(e) =>
+                setUpdateFormData({
+                  ...updateFormData,
+                  quantity_instock: e.target.value,
+                })
+              }
+              className="border p-2 w-full mb-2"
+            />
+            <input
+              type="number"
+              placeholder="Quantity Sold"
+              value={updateFormData.quantity_sold}
+              onChange={(e) =>
+                setUpdateFormData({
+                  ...updateFormData,
+                  quantity_sold: e.target.value,
+                })
+              }
+              className="border p-2 w-full mb-2"
+            />
+            <input
+              type="number"
+              placeholder="Price (Rs)"
+              value={updateFormData.price}
+              onChange={(e) =>
+                setUpdateFormData({ ...updateFormData, price: e.target.value })
+              }
+              className="border p-2 w-full mb-2"
+            />
+            <select
+              value={updateFormData.supplierId}
+              onChange={(e) =>
+                setUpdateFormData({
+                  ...updateFormData,
+                  supplierId: e.target.value,
+                })
+              }
+              className="border p-2 w-full mb-4"
+            >
+              <option value="">Select Supplier</option>
+              {suppliers.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.company} ({s.name})
+                </option>
+              ))}
+            </select>
+            <div className="flex justify-end space-x-2">
+              <button
+                onClick={() => {
+                  setShowUpdateModal(false);
+                  setSelectedProductId(null);
+                }}
+                className="bg-gray-400 text-white px-4 py-2 rounded"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleUpdateProduct}
+                className="bg-yellow-500 text-white px-4 py-2 rounded"
+              >
+                Update
               </button>
             </div>
           </div>
