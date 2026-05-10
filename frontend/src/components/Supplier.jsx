@@ -2,6 +2,14 @@ import React, { useEffect, useState } from "react";
 
 export default function Supplier() {
   const [suppliers, setSuppliers] = useState([]);
+  const [showModal, setShowModal] = useState(false);
+  const [formData, setFormData] = useState({
+    id: "",
+    name: "",
+    company: "",
+    email: "",
+    phone: "",
+  });
 
   useEffect(() => {
     fetch("http://127.0.0.1:8000/get_supplier")
@@ -32,14 +40,60 @@ export default function Supplier() {
     setSuppliers(updated);
   };
 
+  const handleAddSupplier = async () => {
+    // Validations
+    if (
+      !formData.name ||
+      !formData.company ||
+      !formData.email ||
+      !formData.phone
+    ) {
+      alert("All fields are required!");
+      return;
+    }
+    if (
+      formData.name.length > 35 ||
+      formData.company.length > 30 ||
+      formData.email.length > 30
+    ) {
+      alert("Name, company, and email must be within allowed length.");
+      return;
+    }
+    if (!/^\d{10}$/.test(formData.phone)) {
+      alert("Phone number must be exactly 10 digits.");
+      return;
+    }
+
+    // Call backend
+    const res = await fetch("http://127.0.0.1:8000/add_supplier", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(formData),
+    });
+
+    if (res.ok) {
+      const newSupplier = await res.json();
+      setSuppliers([...suppliers, newSupplier]); // add to list
+      setShowModal(false); // close modal
+      setFormData({ name: "", company: "", email: "", phone: "" }); // reset form
+    } else {
+      alert("Failed to add supplier.");
+    }
+  };
+
   return (
     <div className="p-4">
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-xl font-bold">Suppliers</h1>
-        <button className="bg-indigo-600 text-white px-4 py-2 rounded-md">
+        <button
+          onClick={() => setShowModal(true)}
+          className="bg-indigo-600 text-white px-4 py-2 rounded-md"
+        >
           Add Supplier
         </button>
       </div>
+
+      {/* Table */}
       <table className="min-w-full border">
         <thead>
           <tr className="bg-gray-100">
@@ -77,6 +131,72 @@ export default function Supplier() {
           ))}
         </tbody>
       </table>
+
+      {/* Popup Modal */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded shadow-lg w-96">
+            <h2 className="text-lg font-bold mb-4">Add New Supplier</h2>
+            <input
+              type="text"
+              placeholder="Product Id"
+              value={formData.id}
+              onChange={(e) => setFormData({ ...formData, id: e.target.value })}
+              className="border p-2 w-full mb-2"
+            />
+            <input
+              type="text"
+              placeholder="Owner Name"
+              value={formData.name}
+              onChange={(e) =>
+                setFormData({ ...formData, name: e.target.value })
+              }
+              className="border p-2 w-full mb-2"
+            />
+            <input
+              type="text"
+              placeholder="Company"
+              value={formData.company}
+              onChange={(e) =>
+                setFormData({ ...formData, company: e.target.value })
+              }
+              className="border p-2 w-full mb-2"
+            />
+            <input
+              type="email"
+              placeholder="Email"
+              value={formData.email}
+              onChange={(e) =>
+                setFormData({ ...formData, email: e.target.value })
+              }
+              className="border p-2 w-full mb-2"
+            />
+            <input
+              type="text"
+              placeholder="Phone (10 digits)"
+              value={formData.phone}
+              onChange={(e) =>
+                setFormData({ ...formData, phone: e.target.value })
+              }
+              className="border p-2 w-full mb-4"
+            />
+            <div className="flex justify-end space-x-2">
+              <button
+                onClick={() => setShowModal(false)}
+                className="bg-gray-400 text-white px-4 py-2 rounded"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleAddSupplier}
+                className="bg-green-600 text-white px-4 py-2 rounded"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
