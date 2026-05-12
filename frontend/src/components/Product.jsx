@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 
-const PRODUCT_URL = "http://localhost:8002/products"; // product service
-const SUPPLIER_URL = "http://localhost:8001/suppliers"; // supplier service
+const PRODUCT_URL = "http://localhost:8000/products"; // product service
+const SUPPLIER_URL = "http://localhost:8000/suppliers"; // supplier service
 
 export default function Product() {
   const [products, setProducts] = useState([]);

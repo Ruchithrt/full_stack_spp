@@ -1,17 +1,20 @@
 import React, { useEffect, useState } from "react";
 
+const PRODUCT_URL = "http://localhost:8000/products"; // product service
+const SUPPLIER_URL = "http://localhost:8000/suppliers"; // supplier service
+
 export default function Home() {
   const [productCount, setProductCount] = useState(0);
   const [supplierCount, setSupplierCount] = useState(0);
 
   useEffect(() => {
     // Fetch products
-    fetch("http://127.0.0.1:8000/get_product")
+    fetch(`${PRODUCT_URL}/`)
       .then((res) => res.json())
       .then((data) => setProductCount(data.length));
 
     // Fetch suppliers
-    fetch("http://127.0.0.1:8000/get_supplier")
+    fetch(`${SUPPLIER_URL}/`)
       .then((res) => res.json())
       .then((data) => setSupplierCount(data.length));
   }, []);
