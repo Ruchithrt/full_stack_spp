@@ -1,0 +1,30 @@
+services:
+
+  supplier-service:
+    build: ./supplier-service
+    ports:
+      - "8001:8001"           # host:container
+    volumes:
+      - ./supplier-service/suppliers.db:/app/suppliers.db  # persist DB on your machine
+
+  product-service:
+    build: ./product-service
+    ports:
+      - "8002:8002"
+    volumes:
+      - ./product-service/products.db:/app/products.db
+
+  api-gateway:
+    build: ./api-gateway
+    ports:
+      - "8000:8000"
+    depends_on:
+      - supplier-service      # starts after these two are up
+      - product-service
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "5173:5173"
+    depends_on:
+      - api-gateway

@@ -6,8 +6,8 @@ from fastapi.middleware.cors import CORSMiddleware
 app = FastAPI(title="API Gateway")
 
 SERVICES = {
-    "products":  "http://localhost:8002",
-    "suppliers": "http://localhost:8001",
+    "products":  "http://product-service:8002",
+    "suppliers": "http://supplier-service:8001",
 }
 
 # CORS only needed here now — browser talks only to the gateway
