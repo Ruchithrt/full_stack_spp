@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
 
+const BASE_URL = "http://localhost:8001/suppliers"; // ← supplier service + router prefix
+
 export default function Supplier() {
   const [suppliers, setSuppliers] = useState([]);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [formData, setFormData] = useState({
-    id: "",
     name: "",
     company: "",
     email: "",
@@ -13,7 +14,7 @@ export default function Supplier() {
   });
 
   useEffect(() => {
-    fetch("http://127.0.0.1:8000/get_supplier")
+    fetch(`${BASE_URL}/`) // GET /suppliers/
       .then((res) => res.json())
       .then((data) => setSuppliers(data));
   }, []);
@@ -23,19 +24,19 @@ export default function Supplier() {
       "Are you sure you want to delete this supplier?",
     );
     if (!confirmed) return;
-    await fetch(`http://127.0.0.1:8000/delete_suppliers/${id}`, {
+    await fetch(`${BASE_URL}/${id}`, {
+      // DELETE /suppliers/{id}
       method: "DELETE",
     });
     setSuppliers(suppliers.filter((s) => s.id !== id));
   };
 
   const handleOpenUpdate = (supplier) => {
-    setFormData(supplier); // prefill with current info
+    setFormData(supplier);
     setShowUpdateModal(true);
   };
 
   const handleUpdateSupplier = async () => {
-    // Validations
     if (
       !formData.name ||
       !formData.company ||
@@ -46,11 +47,11 @@ export default function Supplier() {
       return;
     }
     if (
-      formData.name.length > 35 ||
-      formData.company.length > 30 ||
+      formData.name.length > 20 ||
+      formData.company.length > 20 ||
       formData.email.length > 30
     ) {
-      alert("Name, company, and email must be within allowed length.");
+      alert("Name/company max 20 chars, email max 30 chars.");
       return;
     }
     if (!/^\d{10}$/.test(formData.phone)) {
@@ -58,14 +59,15 @@ export default function Supplier() {
       return;
     }
 
-    const res = await fetch(
-      `http://127.0.0.1:8000/update_supplier/${formData.id}`,
-      {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      },
-    );
+    // Only send the fields SupplierCreate expects — no id in the body
+    const { id, ...updateBody } = formData;
+
+    const res = await fetch(`${BASE_URL}/${id}`, {
+      // PUT /suppliers/{id}
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(updateBody), // ← id stripped from body
+    });
 
     if (res.ok) {
       const updatedSupplier = await res.json();
@@ -75,7 +77,7 @@ export default function Supplier() {
         ),
       );
       setShowUpdateModal(false);
-      setFormData({ id: "", name: "", company: "", email: "", phone: "" });
+      setFormData({ name: "", company: "", email: "", phone: "" });
     } else {
       alert("Failed to update supplier.");
     }
@@ -83,21 +85,20 @@ export default function Supplier() {
 
   const handleAddSupplier = async () => {
     if (
-      !formData.id ||
       !formData.name ||
       !formData.company ||
       !formData.email ||
       !formData.phone
     ) {
-      alert("All fields are required!");
+      alert("All fields are required!"); // ← id check removed
       return;
     }
     if (
-      formData.name.length > 35 ||
-      formData.company.length > 30 ||
+      formData.name.length > 20 ||
+      formData.company.length > 20 ||
       formData.email.length > 30
     ) {
-      alert("Name, company, and email must be within allowed length.");
+      alert("Name/company max 20 chars, email max 30 chars.");
       return;
     }
     if (!/^\d{10}$/.test(formData.phone)) {
@@ -105,17 +106,18 @@ export default function Supplier() {
       return;
     }
 
-    const res = await fetch("http://127.0.0.1:8000/add_supplier", {
+    const res = await fetch(`${BASE_URL}/`, {
+      // POST /suppliers/
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(formData),
+      body: JSON.stringify(formData), // ← no id in formData, so nothing to strip
     });
 
     if (res.ok) {
       const newSupplier = await res.json();
       setSuppliers([...suppliers, newSupplier]);
       setShowAddModal(false);
-      setFormData({ id: "", name: "", company: "", email: "", phone: "" });
+      setFormData({ name: "", company: "", email: "", phone: "" }); // ← no id: ""
     } else {
       alert("Failed to add supplier.");
     }
@@ -133,7 +135,6 @@ export default function Supplier() {
         </button>
       </div>
 
-      {/* Table */}
       <table className="min-w-full border">
         <thead>
           <tr className="bg-gray-100">
@@ -177,13 +178,7 @@ export default function Supplier() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
           <div className="bg-white p-6 rounded shadow-lg w-96">
             <h2 className="text-lg font-bold mb-4">Add New Supplier</h2>
-            <input
-              type="text"
-              placeholder="Supplier Id"
-              value={formData.id}
-              onChange={(e) => setFormData({ ...formData, id: e.target.value })}
-              className="border p-2 w-full mb-2"
-            />
+            {/* ← id input removed entirely */}
             <input
               type="text"
               placeholder="Owner Name"
@@ -247,7 +242,7 @@ export default function Supplier() {
               type="text"
               value={formData.id}
               disabled
-              className="border p-2 w-full mb-2"
+              className="border p-2 w-full mb-2 bg-gray-100"
             />
             <input
               type="text"

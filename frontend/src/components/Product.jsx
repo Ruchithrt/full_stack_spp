@@ -1,35 +1,32 @@
 import React, { useEffect, useState } from "react";
 
+const PRODUCT_URL = "http://localhost:8002/products"; // product service
+const SUPPLIER_URL = "http://localhost:8001/suppliers"; // supplier service
+
 export default function Product() {
   const [products, setProducts] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [selectedProductId, setSelectedProductId] = useState(null);
-  const [formData, setFormData] = useState({
-    id: "",
-    name: "",
-    quantity_instock: "",
-    quantity_sold: "",
-    price: "",
-    supplierId: "",
-  });
-  const [updateFormData, setUpdateFormData] = useState({
-    id: "",
-    name: "",
-    quantity_instock: "",
-    quantity_sold: "",
-    price: "",
-    supplierId: "",
-  });
 
-  // Fetch products and suppliers
+  const emptyForm = {
+    name: "",
+    quantity_instock: "",
+    quantity_sold: "",
+    price: "",
+    supplierId: "",
+  };
+
+  const [formData, setFormData] = useState(emptyForm);
+  const [updateFormData, setUpdateFormData] = useState(emptyForm);
+
   useEffect(() => {
-    fetch("http://127.0.0.1:8000/get_product")
+    fetch(`${PRODUCT_URL}/`) // GET /products/
       .then((res) => res.json())
       .then((data) => setProducts(data));
 
-    fetch("http://127.0.0.1:8000/get_supplier")
+    fetch(`${SUPPLIER_URL}/`) // GET /suppliers/
       .then((res) => res.json())
       .then((data) => setSuppliers(data));
   }, []);
@@ -39,22 +36,18 @@ export default function Product() {
       "Are you sure you want to delete this product?",
     );
     if (!confirmed) return;
-
-    await fetch(`http://127.0.0.1:8000/delete_product/${id}`, {
-      method: "DELETE",
-    });
+    await fetch(`${PRODUCT_URL}/${id}`, { method: "DELETE" }); // DELETE /products/{id}
     setProducts(products.filter((p) => p.id !== id));
   };
 
   const handleOpenUpdateModal = (product) => {
     setSelectedProductId(product.id);
     setUpdateFormData({
-      id: product.id,
       name: product.name,
       quantity_instock: product.quantity_instock,
       quantity_sold: product.quantity_sold,
       price: product.price,
-      supplierId: product.supplier?.id || "",
+      supplierId: product.supplier_id,
     });
     setShowUpdateModal(true);
   };
@@ -71,34 +64,20 @@ export default function Product() {
       return;
     }
 
-    const supplier = suppliers.find(
-      (s) => s.id === parseInt(updateFormData.supplierId),
-    );
-    if (!supplier) {
-      alert("Supplier not found!");
-      return;
-    }
-
     const payload = {
-      id: parseInt(updateFormData.id),
       name: updateFormData.name,
       quantity_instock: parseInt(updateFormData.quantity_instock),
       quantity_sold: parseInt(updateFormData.quantity_sold),
       price: parseFloat(updateFormData.price),
-      revenue:
-        parseInt(updateFormData.quantity_sold) *
-        parseFloat(updateFormData.price),
-      supplier: supplier,
+      supplier_id: parseInt(updateFormData.supplierId), // ← flat int, no nested object
     };
 
-    const res = await fetch(
-      `http://127.0.0.1:8000/update_product/${selectedProductId}`,
-      {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      },
-    );
+    const res = await fetch(`${PRODUCT_URL}/${selectedProductId}`, {
+      // PUT /products/{id}
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
 
     if (res.ok) {
       const updatedProduct = await res.json();
@@ -107,14 +86,7 @@ export default function Product() {
       );
       setShowUpdateModal(false);
       setSelectedProductId(null);
-      setUpdateFormData({
-        id: "",
-        name: "",
-        quantity_instock: "",
-        quantity_sold: "",
-        price: "",
-        supplierId: "",
-      });
+      setUpdateFormData(emptyForm);
     } else {
       alert("Failed to update product.");
     }
@@ -122,7 +94,6 @@ export default function Product() {
 
   const handleAddProduct = async () => {
     if (
-      !formData.id ||
       !formData.name ||
       !formData.quantity_instock ||
       !formData.quantity_sold ||
@@ -133,25 +104,17 @@ export default function Product() {
       return;
     }
 
-    const supplier = suppliers.find(
-      (s) => s.id === parseInt(formData.supplierId),
-    );
-    if (!supplier) {
-      alert("Supplier not found!");
-      return;
-    }
-
     const payload = {
-      id: parseInt(formData.id),
+      // matches ProductCreate exactly
       name: formData.name,
       quantity_instock: parseInt(formData.quantity_instock),
       quantity_sold: parseInt(formData.quantity_sold),
       price: parseFloat(formData.price),
-      revenue: parseInt(formData.quantity_sold) * parseFloat(formData.price),
-      supplier: supplier,
+      supplier_id: parseInt(formData.supplierId),
     };
 
-    const res = await fetch("http://127.0.0.1:8000/add_product", {
+    const res = await fetch(`${PRODUCT_URL}/`, {
+      // POST /products/
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
@@ -161,14 +124,7 @@ export default function Product() {
       const newProduct = await res.json();
       setProducts([...products, newProduct]);
       setShowModal(false);
-      setFormData({
-        id: "",
-        name: "",
-        quantity_instock: "",
-        quantity_sold: "",
-        price: "",
-        supplierId: "",
-      });
+      setFormData(emptyForm);
     } else {
       alert("Failed to add product.");
     }
@@ -186,7 +142,6 @@ export default function Product() {
         </button>
       </div>
 
-      {/* Table */}
       <table className="min-w-full border">
         <thead>
           <tr className="bg-gray-100">
@@ -195,7 +150,8 @@ export default function Product() {
             <th className="px-4 py-2 border">Quantity Instock</th>
             <th className="px-4 py-2 border">Quantity Sold</th>
             <th className="px-4 py-2 border">Price (In Rs)</th>
-            <th className="px-4 py-2 border">Supplier</th>
+            <th className="px-4 py-2 border">Revenue</th>
+            <th className="px-4 py-2 border">Supplier ID</th>
             <th className="px-4 py-2 border">Actions</th>
           </tr>
         </thead>
@@ -207,9 +163,9 @@ export default function Product() {
               <td className="px-4 py-2 border">{p.quantity_instock}</td>
               <td className="px-4 py-2 border">{p.quantity_sold}</td>
               <td className="px-4 py-2 border">{p.price}</td>
-              <td className="px-4 py-2 border">
-                {p.supplier?.company || p.supplier_id}
-              </td>
+              <td className="px-4 py-2 border">{p.revenue}</td>
+              <td className="px-4 py-2 border">{p.supplier_id}</td>{" "}
+              {/* ← flat field now */}
               <td className="px-4 py-2 border space-x-2">
                 <button
                   onClick={() => handleOpenUpdateModal(p)}
@@ -234,13 +190,7 @@ export default function Product() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
           <div className="bg-white p-6 rounded shadow-lg w-96">
             <h2 className="text-lg font-bold mb-4">Add New Product</h2>
-            <input
-              type="number"
-              placeholder="Product ID"
-              value={formData.id}
-              onChange={(e) => setFormData({ ...formData, id: e.target.value })}
-              className="border p-2 w-full mb-2"
-            />
+            {/* ← Product ID input removed entirely */}
             <input
               type="text"
               placeholder="Product Name"
@@ -316,8 +266,7 @@ export default function Product() {
             <h2 className="text-lg font-bold mb-4">Update Product</h2>
             <input
               type="number"
-              placeholder="Product ID"
-              value={updateFormData.id}
+              value={selectedProductId} // ← read from selectedProductId, not formData
               disabled
               className="border p-2 w-full mb-2 bg-gray-100 cursor-not-allowed"
             />
