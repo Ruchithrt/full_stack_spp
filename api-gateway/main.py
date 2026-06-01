@@ -13,7 +13,7 @@ SERVICES = {
 # CORS only needed here now — browser talks only to the gateway
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:5173"],
+    allow_origins=["http://localhost:3000", "http://localhost:5173", "http://98.130.46.141:5173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

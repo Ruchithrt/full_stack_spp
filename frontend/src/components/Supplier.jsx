@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 
-const BASE_URL = "http://localhost:8000/suppliers"; // ← supplier service + router prefix
+const BASE_URL = "http://98.130.46.141/suppliers"; // ← supplier service + router prefix
 
 export default function Supplier() {
   const [suppliers, setSuppliers] = useState([]);
