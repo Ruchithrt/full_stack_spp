@@ -4,6 +4,7 @@ from db import SessionLocal
 from db_models import Product
 from models import ProductCreate, ProductResponse
 from typing import List
+from kafka_producer import publish
 
 router = APIRouter(prefix="/products", tags=["Products"])
 
@@ -27,6 +28,13 @@ def add_product(product: ProductCreate, db: Session = Depends(get_db)):
     db.add(db_product)
     db.commit()
     db.refresh(db_product)
+
+    publish("product-events", "product_added", {
+        "product_id": db_product.id,
+        "name": db_product.name,
+        "supplier_id": db_product.supplier_id,
+        "price": db_product.price
+    })
     return db_product
 
 @router.get("/", response_model=List[ProductResponse])
@@ -50,6 +58,14 @@ def update_product(product_id: int, product_data: ProductCreate, db: Session = D
     db_product.revenue = db_product.quantity_sold * db_product.price
     db.commit()
     db.refresh(db_product)
+
+    publish("product-events", "product_updated", { 
+        "product_id": db_product.id,
+        "name": db_product.name,
+        "supplier_id": db_product.supplier_id,
+        "price": db_product.price
+    })
+
     return db_product
 
 @router.delete("/{product_id}")
@@ -57,6 +73,18 @@ def delete_product(product_id: int, db: Session = Depends(get_db)):
     db_product = db.query(Product).filter(Product.id == product_id).first()
     if not db_product:
         raise HTTPException(status_code=404, detail="Product not found")
+    
+    pid = db_product.id
+    sid = db_product.supplier_id
+    name = db_product.name
+
     db.delete(db_product)
     db.commit()
+
+    publish("product-events", "product_deleted", {
+        "product_id": pid,
+        "supplier_id": sid,
+        "name": name
+    })
+
     return {"msg": f"Product {product_id} deleted successfully"}

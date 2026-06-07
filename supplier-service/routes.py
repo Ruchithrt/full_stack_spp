@@ -4,6 +4,7 @@ from db import SessionLocal
 from db_models import Supplier
 from models import SupplierCreate, SupplierResponse
 from typing import List
+from kafka_producer import publish 
 
 router = APIRouter(prefix="/suppliers", tags=["Suppliers"])
 
@@ -20,6 +21,14 @@ def add_supplier(supplier: SupplierCreate, db: Session = Depends(get_db)):
     db.add(db_supplier)
     db.commit()
     db.refresh(db_supplier)
+
+    publish("supplier-events", "supplier_added", { 
+        "supplier_id": db_supplier.id,
+        "name": db_supplier.name,
+        "company": db_supplier.company,
+        "email": db_supplier.email
+    })
+
     return db_supplier
 
 @router.get("/", response_model=List[SupplierResponse])
@@ -42,6 +51,12 @@ def update_supplier(supplier_id: int, supplier_data: SupplierCreate, db: Session
         setattr(db_supplier, key, value)
     db.commit()
     db.refresh(db_supplier)
+
+    publish("supplier-events", "supplier_updated", {
+        "supplier_id": db_supplier.id,
+        "name": db_supplier.name,
+        "company": db_supplier.company
+    })
     return db_supplier
 
 @router.delete("/{supplier_id}")
@@ -49,6 +64,18 @@ def delete_supplier(supplier_id: int, db: Session = Depends(get_db)):
     db_supplier = db.query(Supplier).filter(Supplier.id == supplier_id).first()
     if not db_supplier:
         raise HTTPException(status_code=404, detail=f"No supplier found with id: {supplier_id}")
+    
+    # save before delete
+    sid = db_supplier.id
+    name = db_supplier.name
+    company = db_supplier.company
     db.delete(db_supplier)
     db.commit()
+
+    publish("supplier-events", "supplier_deleted", { 
+        "supplier_id": sid,
+        "name": name,
+        "company": company
+    })
+
     return {"msg": f"Supplier {supplier_id} deleted successfully"}

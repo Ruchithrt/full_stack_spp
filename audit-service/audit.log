@@ -1,0 +1,9 @@
+[product-events] product_updated → {'product_id': 7, 'name': 'steel rack', 'supplier_id': 6, 'price': 123456.0}
+[product-events] product_updated → {'product_id': 7, 'name': 'steel rack', 'supplier_id': 6, 'price': 123.0}
+[product-events] product_deleted → {'product_id': 7, 'supplier_id': 6, 'name': 'steel rack'}
+[product-events] product_added → {'product_id': 7, 'name': 'steel rods', 'supplier_id': 6, 'price': 123454.0}
+[supplier-events] supplier_updated → {'supplier_id': 6, 'name': 'Rahul shettarsssss', 'company': 'Shettar & co'}
+[supplier-events] supplier_added → {'supplier_id': 7, 'name': 'testing', 'company': 'tesing', 'email': 'tesin@gmail.com'}
+[supplier-events] supplier_deleted → {'supplier_id': 7, 'name': 'testing', 'company': 'tesing'}
+[supplier-events] supplier_deleted → {'supplier_id': 6, 'name': 'Rahul shettarsssss', 'company': 'Shettar & co'}
+[product-events] product_deleted → {'product_id': 7, 'supplier_id': 6, 'name': 'steel rods'}
