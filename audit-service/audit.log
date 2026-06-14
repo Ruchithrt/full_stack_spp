@@ -1,9 +1,15 @@
-[product-events] product_updated → {'product_id': 7, 'name': 'steel rack', 'supplier_id': 6, 'price': 123456.0}
-[product-events] product_updated → {'product_id': 7, 'name': 'steel rack', 'supplier_id': 6, 'price': 123.0}
-[product-events] product_deleted → {'product_id': 7, 'supplier_id': 6, 'name': 'steel rack'}
-[product-events] product_added → {'product_id': 7, 'name': 'steel rods', 'supplier_id': 6, 'price': 123454.0}
-[supplier-events] supplier_updated → {'supplier_id': 6, 'name': 'Rahul shettarsssss', 'company': 'Shettar & co'}
-[supplier-events] supplier_added → {'supplier_id': 7, 'name': 'testing', 'company': 'tesing', 'email': 'tesin@gmail.com'}
-[supplier-events] supplier_deleted → {'supplier_id': 7, 'name': 'testing', 'company': 'tesing'}
-[supplier-events] supplier_deleted → {'supplier_id': 6, 'name': 'Rahul shettarsssss', 'company': 'Shettar & co'}
-[product-events] product_deleted → {'product_id': 7, 'supplier_id': 6, 'name': 'steel rods'}
+[supplier-events] supplier_added → {'supplier_id': 1, 'name': 'Rahul', 'company': 'Steel and co', 'email': 'rahul@gmail.com'}
+[product-events] product_added → {'product_id': 1, 'name': 'steel rods', 'supplier_id': 1, 'price': 2000.0}
+[product-events] product_updated → {'product_id': 1, 'name': 'steel rods', 'supplier_id': 1, 'price': 2000.0}
+[supplier-events] supplier_deleted → {'supplier_id': 1, 'name': 'Rahul', 'company': 'Steel and co'}
+[supplier-events] supplier_added → {'supplier_id': 1, 'name': 'Rahul shettar', 'company': 'shettar steel & co', 'email': 'shettarsteel@gmail.com'}
+[supplier-events] supplier_deleted → {'supplier_id': 1, 'name': 'Rahul shettar', 'company': 'shettar steel & co'}
+[product-events] product_deleted → {'product_id': 1, 'supplier_id': 1, 'name': 'steel rods'}
+[product-events] product_added → {'product_id': 1, 'name': 'Steel 30mm rods', 'supplier_id': 1, 'price': 500.0, 'quantity_sold': 4, 'quantity_instock': 15}
+[product-events] product_updated → {'product_id': 1, 'name': 'Steel 30mm rods', 'supplier_id': 1, 'price': 500.0, 'quantity_sold': 4, 'quantity_instock': 9}
+[product-events] product_deleted → {'product_id': 1, 'supplier_id': 1, 'name': 'Steel 30mm rods'}
+[supplier-events] supplier_added → {'supplier_id': 1, 'name': 'Ravi kumar', 'company': 'kumar sales', 'email': 'kumarsales@gmail.com'}
+[product-events] product_added → {'product_id': 1, 'name': 'toothpaste', 'supplier_id': 1, 'price': 30.0, 'quantity_sold': 4, 'quantity_instock': 16}
+[product-events] product_updated → {'product_id': 1, 'name': 'toothpaste', 'supplier_id': 1, 'price': 30.0, 'quantity_sold': 7, 'quantity_instock': 16}
+[product-events] product_updated → {'product_id': 1, 'name': 'toothpaste', 'supplier_id': 1, 'price': 30.0, 'quantity_sold': 7, 'quantity_instock': 9}
+[product-events] product_updated → {'product_id': 1, 'name': 'toothpaste', 'supplier_id': 1, 'price': 30.0, 'quantity_sold': 7, 'quantity_instock': 11}

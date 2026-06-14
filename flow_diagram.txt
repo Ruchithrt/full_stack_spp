@@ -1,0 +1,23 @@
+User Action (frontend)
+  ↓ REST
+API Gateway
+  ↓ REST
+Product Service ──publishes──▶ product-events topic
+Supplier Service ──publishes──▶ supplier-events topic
+                                      ↓
+                        ┌─────────────┼──────────────┐
+                        ↓             ↓              ↓
+                  Audit Service  Analytics     Inventory Service
+                  (logs all)     Service       (checks stock)
+                                 (totals)            ↓
+                                             low-stock-alerts topic
+                                                      ↓
+                                          ┌───────────┴───────────┐
+                                          ↓                       ↓
+                                  Notification Service     Reorder Service
+                                  (logs alert)             (creates reorder)
+                                                                   ↓
+                                                          reorder-created topic
+                                                                   ↓
+                                                          Notification Service
+                                                          (logs reorder created)

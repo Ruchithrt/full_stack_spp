@@ -33,7 +33,9 @@ def add_product(product: ProductCreate, db: Session = Depends(get_db)):
         "product_id": db_product.id,
         "name": db_product.name,
         "supplier_id": db_product.supplier_id,
-        "price": db_product.price
+        "price": db_product.price,
+        "quantity_sold": db_product.quantity_sold,       
+        "quantity_instock": db_product.quantity_instock
     })
     return db_product
 
@@ -63,7 +65,9 @@ def update_product(product_id: int, product_data: ProductCreate, db: Session = D
         "product_id": db_product.id,
         "name": db_product.name,
         "supplier_id": db_product.supplier_id,
-        "price": db_product.price
+        "price": db_product.price,
+        "quantity_sold": db_product.quantity_sold,      
+        "quantity_instock": db_product.quantity_instock
     })
 
     return db_product

@@ -8,6 +8,7 @@ app = FastAPI(title="API Gateway")
 SERVICES = {
     "products":  "http://product-service:8002",
     "suppliers": "http://supplier-service:8001",
+    "analytics": "http://analytics-service:8003", 
 }
 
 # CORS only needed here now — browser talks only to the gateway
